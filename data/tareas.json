@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "id": 1,
+    "titulo": "Configurar el proyecto api-tareas",
+    "descripcion": "npm init, dependencias y repositorio de GitHub ligado a la carpeta local",
+    "completada": true,
+    "creadaPor": {
+      "id": "a968f39f-4829-415e-9d5c-0ff19373548f",
+      "usuario": "derek"
+    },
+    "creadaEn": "2026-11-08T20:22:26.018Z",
+    "actualizadaEn": "2026-11-08T20:28:21.128Z"
+  },
+  {
+    "id": 2,
+    "titulo": "Implementar el CRUD de /tareas",
+    "descripcion": "Rutas GET, POST, PUT y DELETE que leen y escriben tareas.json con fs.promises",
+    "completada": false,
+    "creadaPor": {
+      "id": "a968f39f-4829-415e-9d5c-0ff19373548f",
+      "usuario": "derek"
+    },
+    "creadaEn": "2026-11-08T20:22:26.714Z",
+    "actualizadaEn": "2026-11-08T20:22:26.714Z"
+  },
+  {
+    "id": 3,
+    "titulo": "Proteger las rutas con JWT",
+    "descripcion": "Registro con bcryptjs, login con token y middleware verificarToken",
+    "completada": true,
+    "creadaPor": {
+      "id": "a968f39f-4829-415e-9d5c-0ff19373548f",
+      "usuario": "derek"
+    },
+    "creadaEn": "2026-11-08T20:22:27.410Z",
+    "actualizadaEn": "2026-11-08T20:28:20.454Z"
+  },
+  {
+    "id": 4,
+    "titulo": "Grabar el video demostrativo",
+    "descripcion": "Mostrar el CRUD, la autenticación, la protección de rutas y los errores",
+    "completada": false,
+    "creadaPor": {
+      "id": "a968f39f-4829-415e-9d5c-0ff19373548f",
+      "usuario": "derek"
+    },
+    "creadaEn": "2026-11-08T20:22:28.117Z",
+    "actualizadaEn": "2026-11-08T20:22:28.117Z"
+  }
+]

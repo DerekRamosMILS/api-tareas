@@ -21,8 +21,8 @@ app.disable('x-powered-by');
 
 // ---------- Middlewares generales ----------
 app.use(express.static(path.join(__dirname, 'public')));   // consola de pruebas en http://localhost:3000
-app.use(bitacora);                                         // console.log de cada petición (antes de body-parser,
-                                                           // para que también se registren los JSON mal formados)
+// La bitácora va antes de body-parser para que también se registren los JSON mal formados
+app.use(bitacora);                                         // console.log de cada petición
 app.use(bodyParser.json({ limit: '10kb' }));               // convierte el cuerpo JSON en req.body
 
 // ---------- Rutas públicas ----------
