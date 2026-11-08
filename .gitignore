@@ -1,0 +1,6 @@
+node_modules/
+.env
+*.tmp
+.DS_Store
+# Los usuarios (con sus hashes de bcrypt) se quedan solo en la computadora local
+data/usuarios.json
