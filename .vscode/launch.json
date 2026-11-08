@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Adjuntar a npm run debug (--inspect, puerto 9229)",
+      "address": "127.0.0.1",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Iniciar la API con el depurador",
+      "program": "${workspaceFolder}/server.js",
+      "runtimeArgs": ["--env-file-if-exists=.env"],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

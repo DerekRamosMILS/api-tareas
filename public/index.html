@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API de Tareas · consola de pruebas</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23004d40'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%2380cbc4' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --fondo: #f3f5f4; --tarjeta: #ffffff; --borde: #d9e0de; --texto: #1b2a35; --tenue: #5b6b74;
+      --marca: #004d40; --marca-2: #00695c; --acento: #80cbc4; --suave: #e3f2ef;
+      --codigo: #14212b; --codigo-texto: #d7e0e6;
+      --ok: #1e7f4f; --aviso: #b26a00; --error: #c0392b;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--fondo); color: var(--texto); font: 15px/1.5 var(--sans); }
+    header { background: var(--marca); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    header h1 { font-size: 19px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+    header h1 small { font-weight: 400; opacity: .75; margin-left: 6px; font-size: 14px; }
+    .estado { margin-left: auto; font-size: 13px; background: rgba(255,255,255,.12); padding: 5px 12px; border-radius: 999px; }
+    .estado b { color: var(--acento); }
+    main { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; padding: 18px 24px 28px; max-width: 1360px; margin: 0 auto; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 14px 16px; } }
+    .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 16px; }
+    .tarjeta + .tarjeta { margin-top: 14px; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--tenue); margin: 0 0 12px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 8px 0 4px; }
+    input, select, textarea { width: 100%; font: inherit; border: 1px solid var(--borde); border-radius: 8px; padding: 8px 10px; background: #fff; color: var(--texto); }
+    input:focus, select:focus, textarea:focus, button:focus-visible { outline: 3px solid var(--acento); outline-offset: 1px; }
+    textarea { font: 13.5px/1.5 var(--mono); min-height: 128px; resize: vertical; }
+    textarea:disabled { background: #f0f2f1; color: #9aa6ac; }
+    button { font: inherit; font-weight: 600; border: 1px solid var(--borde); background: #fff; color: var(--texto); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+    button:hover { border-color: var(--marca-2); }
+    .primario { background: var(--marca); border-color: var(--marca); color: #fff; }
+    .primario:hover { background: var(--marca-2); }
+    .fila { display: flex; gap: 8px; align-items: center; }
+    .fila > * { flex: 1; }
+    .sesion { background: var(--suave); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
+    .sesion code { font: 12px var(--mono); word-break: break-all; color: var(--marca); }
+    .atajos { display: grid; gap: 6px; }
+    .atajos button { display: flex; gap: 10px; align-items: center; text-align: left; font-weight: 500; padding: 7px 10px; }
+    .atajos .grupo { font-size: 12px; color: var(--tenue); margin: 8px 0 0; font-weight: 600; }
+    .metodo { font: 700 11.5px var(--mono); padding: 2px 6px; border-radius: 5px; min-width: 52px; text-align: center; color: #fff; }
+    .GET { background: #1f6fb2; } .POST { background: #1e7f4f; } .PUT { background: #b26a00; } .DELETE { background: #c0392b; } .PATCH { background: #6a3d9a; }
+    .peticion { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 8px; }
+    @media (max-width: 600px) { .peticion { grid-template-columns: 1fr; } }
+    #ruta { font-family: var(--mono); }
+    .check { display: flex; align-items: center; gap: 8px; font-weight: 500; margin: 10px 0 4px; }
+    .check input { width: auto; }
+    .respuesta-cabecera { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+    .codigo-http { font: 700 15px var(--mono); padding: 4px 12px; border-radius: 8px; color: #fff; }
+    .c2 { background: var(--ok); } .c4 { background: var(--aviso); } .c5 { background: var(--error); }
+    .tiempo { color: var(--tenue); font-size: 13px; }
+    .encabezados { font: 12.5px var(--mono); color: var(--tenue); margin: 0 0 10px; }
+    .enviada { font: 13px var(--mono); margin: 0 0 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .enviada .token-si { color: var(--ok); } .enviada .token-no { color: var(--error); }
+    .encabezados span { display: inline-block; margin-right: 14px; }
+    pre.json { background: var(--codigo); color: var(--codigo-texto); font: 13px/1.55 var(--mono); padding: 14px 16px; border-radius: 10px; margin: 0; overflow: auto; max-height: 460px; white-space: pre-wrap; word-break: break-word; }
+    .k { color: #8ecdf8; } .s { color: #f0b98a; } .n { color: #b7e0a5; } .b { color: #7fb3ff; }
+    .vacio { color: var(--tenue); font-style: italic; }
+    .pestanas { display: flex; gap: 6px; margin-bottom: 8px; }
+    .pestanas button { padding: 4px 10px; font-size: 13px; }
+    .pestanas button[aria-pressed="true"] { background: var(--marca); color: #fff; border-color: var(--marca); }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+    th { font-size: 12px; color: var(--tenue); text-transform: uppercase; letter-spacing: .05em; }
+    .hecha { color: var(--ok); font-weight: 700; } .pendiente { color: var(--aviso); font-weight: 700; }
+    #historial { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+    #historial li button { width: 100%; display: flex; gap: 8px; align-items: center; font: 12.5px var(--mono); padding: 5px 8px; border-color: transparent; background: #f7f9f8; }
+    #historial .estado-h { margin-left: auto; font-weight: 700; }
+    .aviso { font-size: 13px; color: var(--tenue); margin: 6px 0 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>API de Tareas <small>consola de pruebas</small></h1>
+    <span class="estado" id="estado">Conectando…</span>
+  </header>
+
+  <main>
+    <aside>
+      <section class="tarjeta" aria-labelledby="t-sesion">
+        <h2 id="t-sesion">Sesión</h2>
+        <form id="form-sesion" autocomplete="off">
+          <label for="usuario">Usuario</label>
+          <input id="usuario" name="usuario" placeholder="ej. ana" required>
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" placeholder="mínimo 8, letras y números" required>
+          <div class="fila" style="margin-top:12px">
+            <button type="button" id="btn-registro">Registrarme</button>
+            <button type="submit" class="primario" id="btn-login">Iniciar sesión</button>
+          </div>
+        </form>
+        <div class="sesion" id="panel-sesion" hidden>
+          <div>Sesión activa: <b id="sesion-usuario"></b></div>
+          <div>Expira: <span id="sesion-expira"></span></div>
+          <div>Token: <code id="sesion-token"></code></div>
+          <div class="fila" style="margin-top:10px">
+            <button type="button" id="btn-perfil">GET /perfil</button>
+            <button type="button" id="btn-logout">Cerrar sesión</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-atajos">
+        <h2 id="t-atajos">Atajos</h2>
+        <div class="atajos" id="atajos"></div>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-historial">
+        <h2 id="t-historial">Historial</h2>
+        <ul id="historial"><li class="vacio">Aún no hay peticiones.</li></ul>
+      </section>
+    </aside>
+
+    <section>
+      <form class="tarjeta" id="form-peticion" aria-labelledby="t-peticion">
+        <h2 id="t-peticion">Petición</h2>
+        <div class="peticion">
+          <select id="metodo" aria-label="Método HTTP">
+            <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option>
+          </select>
+          <input id="ruta" aria-label="Ruta" value="/tareas" spellcheck="false">
+          <button type="submit" class="primario" id="btn-enviar">Enviar</button>
+        </div>
+        <label class="check"><input type="checkbox" id="con-token" checked> Enviar el token (Authorization: Bearer …)</label>
+        <label for="cuerpo">Cuerpo (JSON)</label>
+        <textarea id="cuerpo" spellcheck="false" disabled></textarea>
+        <p class="aviso" id="aviso-cuerpo">GET y DELETE no llevan cuerpo.</p>
+      </form>
+
+      <section class="tarjeta" aria-labelledby="t-respuesta" aria-live="polite">
+        <h2 id="t-respuesta">Respuesta</h2>
+        <div id="sin-respuesta" class="vacio">Envía una petición para ver la respuesta del servidor.</div>
+        <div id="con-respuesta" hidden>
+          <div class="respuesta-cabecera">
+            <span class="codigo-http" id="codigo"></span>
+            <b id="texto-estado"></b>
+            <span class="tiempo" id="tiempo"></span>
+          </div>
+          <p class="enviada" id="enviada"></p>
+          <p class="encabezados" id="encabezados"></p>
+          <div class="pestanas" id="pestanas" hidden>
+            <button type="button" data-vista="json" aria-pressed="true">JSON</button>
+            <button type="button" data-vista="tabla" aria-pressed="false">Tabla</button>
+          </div>
+          <pre class="json" id="json"></pre>
+          <div id="tabla" hidden></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const textosEstado = { 200: 'OK', 201: 'Created', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 405: 'Method Not Allowed', 409: 'Conflict', 413: 'Payload Too Large', 429: 'Too Many Requests', 500: 'Internal Server Error' };
+    const ejemploTarea = { titulo: 'Estudiar Express.js', descripcion: 'Repasar rutas, middlewares y manejo de errores' };
+    let sesion = null;
+    const historial = [];
+
+    const atajos = [
+      ['CRUD de tareas'],
+      ['GET', '/tareas', null, true, 'Listar todas'],
+      ['POST', '/tareas', ejemploTarea, true, 'Crear tarea'],
+      ['GET', '/tareas/1', null, true, 'Ver una tarea'],
+      ['PUT', '/tareas/1', { completada: true }, true, 'Marcar completada'],
+      ['DELETE', '/tareas/1', null, true, 'Eliminar tarea'],
+      ['Errores y seguridad'],
+      ['GET', '/tareas', null, false, 'Sin token → 401'],
+      ['POST', '/tareas', '{ "titulo": "Sin cerrar", ', true, 'JSON mal formado → 400'],
+      ['POST', '/tareas', { titulo: 'Hi' }, true, 'Datos inválidos → 400'],
+      ['GET', '/tareas/999', null, true, 'No existe → 404'],
+      ['PATCH', '/tareas/1', null, true, 'Método no permitido → 405'],
+      ['GET', '/ruta-inexistente', null, false, 'Ruta inexistente → 404'],
+    ];
+
+    function escapar(texto) {
+      return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function resaltar(json) {
+      return escapar(JSON.stringify(json, null, 2)).replace(
+        /(&quot;(?:[^&]|&(?!quot;))*?&quot;)(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g,
+        (m, cadena, dosPuntos, booleano, numero) => {
+          if (cadena) return dosPuntos ? `<span class="k">${cadena}</span>${dosPuntos}` : `<span class="s">${cadena}</span>`;
+          if (booleano) return `<span class="b">${booleano}</span>`;
+          return `<span class="n">${numero}</span>`;
+        });
+    }
+
+    function pintarAtajos() {
+      $('#atajos').innerHTML = atajos.map((a, i) => a.length === 1
+        ? `<p class="grupo">${a[0]}</p>`
+        : `<button type="button" data-atajo="${i}"><span class="metodo ${a[0]}">${a[0]}</span>${escapar(a[4])}</button>`).join('');
+    }
+
+    function ajustarCuerpo() {
+      const conCuerpo = ['POST', 'PUT', 'PATCH'].includes($('#metodo').value);
+      $('#cuerpo').disabled = !conCuerpo;
+      $('#aviso-cuerpo').hidden = conCuerpo;
+    }
+
+    function cargarAtajo(i) {
+      const [metodo, ruta, cuerpo, conToken] = atajos[i];
+      $('#metodo').value = metodo;
+      $('#ruta').value = ruta;
+      $('#con-token').checked = conToken;
+      $('#cuerpo').value = cuerpo == null ? '' : typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo, null, 2);
+      ajustarCuerpo();
+    }
+
+    async function enviar({ metodo, ruta, cuerpo, conToken }) {
+      const headers = {};
+      if (cuerpo) headers['Content-Type'] = 'application/json';
+      if (conToken && sesion) headers.Authorization = `Bearer ${sesion.token}`;
+      const inicio = performance.now();
+      let respuesta, datos;
+      try {
+        respuesta = await fetch(ruta, { method: metodo, headers, body: cuerpo || undefined });
+        datos = await respuesta.json().catch(() => null);
+      } catch {
+        mostrar({ metodo, ruta, conToken: !!headers.Authorization, estado: 0, ms: 0, datos: { error: 'No hay conexión con el servidor. ¿Está corriendo npm start?' }, encabezados: {} });
+        return { estado: 0 };
+      }
+      const ms = Math.round(performance.now() - inicio);
+      const encabezados = {};
+      for (const h of ['Content-Type', 'Location', 'WWW-Authenticate', 'Allow', 'Retry-After']) {
+        if (respuesta.headers.get(h)) encabezados[h] = respuesta.headers.get(h);
+      }
+      const registro = { metodo, ruta, conToken: !!headers.Authorization, estado: respuesta.status, ms, datos, encabezados };
+      historial.unshift(registro);
+      pintarHistorial();
+      mostrar(registro);
+      return registro;
+    }
+
+    function mostrar({ metodo, ruta, conToken, estado, ms, datos, encabezados }) {
+      $('#sin-respuesta').hidden = true;
+      $('#enviada').innerHTML = `<span class="metodo ${metodo}">${metodo}</span>${escapar(ruta)} <span class="${conToken ? 'token-si' : 'token-no'}">${conToken ? '· con token' : '· sin token'}</span>`;
+      $('#con-respuesta').hidden = false;
+      const codigo = $('#codigo');
+      codigo.textContent = estado || '—';
+      codigo.className = `codigo-http c${String(estado)[0] === '2' ? 2 : String(estado)[0] === '4' ? 4 : 5}`;
+      $('#texto-estado').textContent = textosEstado[estado] ?? '';
+      $('#tiempo').textContent = estado ? `${ms} ms` : '';
+      $('#encabezados').innerHTML = Object.entries(encabezados).map(([k, v]) => `<span>${k}: ${escapar(v)}</span>`).join('');
+      $('#json').innerHTML = datos == null ? '<span class="vacio">(sin cuerpo)</span>' : resaltar(datos);
+      const lista = datos && Array.isArray(datos.tareas) ? datos.tareas : null;
+      $('#pestanas').hidden = !lista;
+      if (lista) pintarTabla(lista);
+      verVista(lista && $('#pestanas [data-vista="tabla"]').getAttribute('aria-pressed') === 'true' ? 'tabla' : 'json');
+    }
+
+    function pintarTabla(tareas) {
+      $('#tabla').innerHTML = tareas.length
+        ? `<table><thead><tr><th>Id</th><th>Título</th><th>Descripción</th><th>Estado</th><th>Creada por</th></tr></thead><tbody>${
+          tareas.map((t) => `<tr><td>${t.id}</td><td><b>${escapar(t.titulo)}</b></td><td>${escapar(t.descripcion)}</td><td class="${t.completada ? 'hecha' : 'pendiente'}">${t.completada ? '✔ Completada' : 'Pendiente'}</td><td>${escapar(t.creadaPor?.usuario ?? '')}</td></tr>`).join('')
+        }</tbody></table>`
+        : '<p class="vacio">No hay tareas.</p>';
+    }
+
+    function verVista(vista) {
+      $('#json').hidden = vista !== 'json';
+      $('#tabla').hidden = vista !== 'tabla';
+      document.querySelectorAll('#pestanas button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === vista)));
+    }
+
+    function pintarHistorial() {
+      $('#historial').innerHTML = historial.slice(0, 8).map((h, i) => `<li><button type="button" data-historial="${i}"><span class="metodo ${h.metodo}">${h.metodo}</span>${escapar(h.ruta)}<span class="estado-h" style="color:var(${h.estado < 300 ? '--ok' : h.estado < 500 ? '--aviso' : '--error'})">${h.estado}</span></button></li>`).join('');
+    }
+
+    function pintarSesion() {
+      $('#form-sesion').hidden = !!sesion;
+      $('#panel-sesion').hidden = !sesion;
+      if (!sesion) return;
+      $('#sesion-usuario').textContent = sesion.usuario;
+      $('#sesion-expira').textContent = new Date(sesion.expiraEn).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      $('#sesion-token').textContent = `${sesion.token.slice(0, 36)}…`;
+    }
+
+    async function actualizarEstado() {
+      try {
+        const r = await fetch('/salud');
+        const d = await r.json();
+        $('#estado').innerHTML = `● <b>En línea</b> · ${d.tareas} tareas · ${d.usuarios} usuarios`;
+      } catch {
+        $('#estado').textContent = '● Sin conexión con el servidor';
+      }
+    }
+
+    function credenciales() {
+      return JSON.stringify({ usuario: $('#usuario').value.trim(), password: $('#password').value }, null, 2);
+    }
+
+    $('#form-sesion').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const r = await enviar({ metodo: 'POST', ruta: '/login', cuerpo: credenciales(), conToken: false });
+      if (r.estado === 200) {
+        sesion = { token: r.datos.token, usuario: r.datos.usuario.usuario, expiraEn: r.datos.expiraEn };
+        $('#password').value = '';
+        pintarSesion();
+      }
+    });
+    $('#btn-registro').addEventListener('click', async () => {
+      await enviar({ metodo: 'POST', ruta: '/register', cuerpo: credenciales(), conToken: false });
+      actualizarEstado();
+    });
+    $('#btn-perfil').addEventListener('click', () => enviar({ metodo: 'GET', ruta: '/perfil', conToken: true }));
+    $('#btn-logout').addEventListener('click', async () => {
+      const r = await enviar({ metodo: 'POST', ruta: '/logout', conToken: true });
+      if (r.estado === 200 || r.estado === 401) { sesion = null; pintarSesion(); }
+    });
+    $('#form-peticion').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const metodo = $('#metodo').value;
+      const cuerpo = $('#cuerpo').disabled ? '' : $('#cuerpo').value.trim();
+      await enviar({ metodo, ruta: $('#ruta').value.trim(), cuerpo, conToken: $('#con-token').checked });
+      actualizarEstado();
+    });
+    $('#metodo').addEventListener('change', ajustarCuerpo);
+    $('#atajos').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-atajo]');
+      if (b) cargarAtajo(Number(b.dataset.atajo));
+    });
+    $('#historial').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-historial]');
+      if (b) mostrar(historial[Number(b.dataset.historial)]);
+    });
+    $('#pestanas').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-vista]');
+      if (b) verVista(b.dataset.vista);
+    });
+
+    pintarAtajos();
+    pintarSesion();
+    actualizarEstado();
+  </script>
+</body>
+</html>
